@@ -25,6 +25,7 @@ var classesFromPackages = function ( packages )
 };
 
 var extractLcovStyleBranches = function ( c ) {
+
     var branches = [];
 
     if ( c.lines && c.lines[0].line )
@@ -72,8 +73,13 @@ var unpackage = function ( coverage, absPath )
     var source = coverage.sources[ 0 ].source[ 0 ];
 
     var classes = classesFromPackages( packages );
-    return classes.map( function ( c )
+
+    var classesMap = classes.map( function ( c )
     {
+        if (c === undefined) {
+            return null;
+        }
+
         var branches = extractLcovStyleBranches( c );
         var classCov = {
             title: c.$.name,
@@ -118,12 +124,20 @@ var unpackage = function ( coverage, absPath )
             return acc + ( val.hit > 0 ? 1 : 0 );
         }, 0 );
 
+        // console.log(classCov);
+
         return classCov;
     } );
+
+    return classesMap.filter(function (el) {
+        return el != null;
+    });
 };
 
 parse.parseContent = function ( xml, cb, absPath )
 {
+    if (typeof cb !== 'function') return( cb );
+
     parseString( xml, function ( err, parseResult )
     {
         if( err )
